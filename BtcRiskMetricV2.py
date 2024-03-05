@@ -29,7 +29,6 @@ ohlcv_df = ohlcv_df[ohlcv_df['Date'] > timestamp_240108]
 
 ohlcv_df['Date'] = pd.to_datetime(ohlcv_df['Date'], unit='ms')
 ohlcv_df = ohlcv_df[['Date', 'Value']]
-ohlcv_df
 df.sort_values(by='Date', inplace=True)
 
 df = df[df['Value'] > 0]
