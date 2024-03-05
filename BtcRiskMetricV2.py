@@ -6,18 +6,34 @@ import plotly.express as px
 import plotly.graph_objects as go
 import quandl
 import yfinance as yf
+import ccxt
 
 # Download historical data from Quandl
+# df = quandl.get('BCHAIN/MKPRU', api_key='FYzyusVT61Y4w65nFESX').reset_index()
+
+# # Convert dates to datetime object for easy use
+# df['Date'] = pd.to_datetime(df['Date'])
+
+# # Sort data by date, just in case
+# df.sort_values(by='Date', inplace=True)
+
+# # Only include data points with existing price
+# df = df[df['Value'] > 0]
+binance = ccxt.binance()
 df = quandl.get('BCHAIN/MKPRU', api_key='FYzyusVT61Y4w65nFESX').reset_index()
-
-# Convert dates to datetime object for easy use
 df['Date'] = pd.to_datetime(df['Date'])
+ohlcv = binance.fetch_ohlcv('BTC/USDT', timeframe='1d')
+ohlcv_df = pd.DataFrame(ohlcv, columns=['Date', 'OPEN', 'HIGH', 'LOW', 'Value', 'Volume'])
+timestamp_240108= binance.parse8601('2024-01-08T00:00:00')
+ohlcv_df = ohlcv_df[ohlcv_df['Date'] > timestamp_240108]
 
-# Sort data by date, just in case
+ohlcv_df['Date'] = pd.to_datetime(ohlcv_df['Date'], unit='ms')
+ohlcv_df = ohlcv_df[['Date', 'Value']]
+ohlcv_df
 df.sort_values(by='Date', inplace=True)
 
-# Only include data points with existing price
 df = df[df['Value'] > 0]
+df = pd.concat([df, ohlcv_df]).reset_index().iloc[:-1][['Date', 'Value']]
 
 # Get the last price against USD
 btcdata = yf.download(tickers='BTC-USD', period='1d', interval='1m')
